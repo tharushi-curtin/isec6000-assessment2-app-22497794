@@ -64,7 +64,14 @@ pipeline {
                 stage('Dependency security scan') {
                     steps {
                         // A non-zero exit stops image build and publication.
-                        sh 'npm audit --audit-level=high --json > reports/npm-audit.json'
+                        sh '''
+                                audit_status=0
+                                npm audit --audit-level=high --json > reports/npm-audit.json || audit_status=$?
+                                echo "Dependency security scan report:"
+                                cat reports/npm-audit.json
+                                echo "npm audit exit code: $audit_status"
+                                exit "$audit_status"
+                            '''
                     }
                 }
             }
